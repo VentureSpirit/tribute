@@ -501,7 +501,7 @@ class TributeRange {
         let left = 0
         if (this.menuContainerIsBody) {
             top = rect.top + windowTop
-            left = rect.left + wiindowLeft
+            left = rect.left + windowLeft
         }
 
         let coordinates = {

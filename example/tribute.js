@@ -999,7 +999,7 @@
 
         if (this.menuContainerIsBody) {
           top = rect.top + windowTop;
-          left = rect.left + wiindowLeft;
+          left = rect.left + windowLeft;
         }
 
         var coordinates = {
