@@ -1,3 +1,5 @@
+
+(function(l, r) { if (l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (window.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.head.appendChild(r) })(window.document);
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -925,20 +927,11 @@
     }, {
       key: "isMenuOffScreen",
       value: function isMenuOffScreen(coordinates, menuDimensions) {
-        var windowWidth = window.innerWidth;
-        var windowHeight = window.innerHeight;
-        var doc = document.documentElement;
-        var windowLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
-        var windowTop = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
-        var menuTop = typeof coordinates.top === 'number' ? coordinates.top : windowTop + windowHeight - coordinates.bottom - menuDimensions.height;
-        var menuRight = typeof coordinates.right === 'number' ? coordinates.right : coordinates.left + menuDimensions.width;
-        var menuBottom = typeof coordinates.bottom === 'number' ? coordinates.bottom : coordinates.top + menuDimensions.height;
-        var menuLeft = typeof coordinates.left === 'number' ? coordinates.left : windowLeft + windowWidth - coordinates.right - menuDimensions.width;
         return {
-          top: menuTop < Math.floor(windowTop),
-          right: menuRight > Math.ceil(windowLeft + windowWidth),
-          bottom: menuBottom > Math.ceil(windowTop + windowHeight),
-          left: menuLeft < Math.floor(windowLeft)
+          top: false,
+          right: false,
+          bottom: false,
+          left: false
         };
       }
     }, {
@@ -1005,13 +998,13 @@
         var left = 0;
 
         if (this.menuContainerIsBody) {
-          top = rect.top;
-          left = rect.left;
+          top = rect.top + windowTop;
+          left = rect.left + wiindowLeft;
         }
 
         var coordinates = {
-          top: top + windowTop + span.offsetTop + parseInt(computed.borderTopWidth) + parseInt(computed.fontSize) - element.scrollTop,
-          left: left + windowLeft + span.offsetLeft + parseInt(computed.borderLeftWidth)
+          top: top + span.offsetTop + parseInt(computed.borderTopWidth) + parseInt(computed.fontSize) - element.scrollTop,
+          left: left + span.offsetLeft + parseInt(computed.borderLeftWidth)
         };
         var windowWidth = window.innerWidth;
         var windowHeight = window.innerHeight;
@@ -1062,9 +1055,23 @@
         var windowTop = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
         var left = rect.left;
         var top = rect.top;
+
+        if (!this.menuContainerIsBody) {
+          // coordinates are referenced absolutely to the viewport position
+          // we need to make them relative by subtracting the menuContainers viewport position
+          var menuContainerRect = this.tribute.menuContainer.getBoundingClientRect();
+          left = left - menuContainerRect.left;
+          top = top - menuContainerRect.top;
+        } else {
+          // coordinates are referenced absolutely to the viewport position
+          // we need to take the viewport position into account
+          left = left + windowLeft;
+          top = top + windowTop;
+        }
+
         var coordinates = {
-          left: left + windowLeft,
-          top: top + rect.height + windowTop
+          left: left,
+          top: top + rect.height
         };
         var windowWidth = window.innerWidth;
         var windowHeight = window.innerHeight;
@@ -1095,11 +1102,6 @@
         if (menuIsOffScreen.top) {
           coordinates.top = windowHeight > menuDimensions.height ? windowTop + windowHeight - menuDimensions.height : windowTop;
           delete coordinates.bottom;
-        }
-
-        if (!this.menuContainerIsBody) {
-          coordinates.left = coordinates.left ? coordinates.left - this.tribute.menuContainer.offsetLeft : coordinates.left;
-          coordinates.top = coordinates.top ? coordinates.top - this.tribute.menuContainer.offsetTop : coordinates.top;
         }
 
         return coordinates;
